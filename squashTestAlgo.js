@@ -1,9 +1,9 @@
 // criterion score (end condition)
-  var theta = 10;
+  var theta = 2;
   // Crossover rate
-  var Pco  = 0.05;
+  var Pco  = 0.7;
   // Mutation rate
-  var Pmut = 0.01;
+  var Pmut = 0.95;
   // Population size
   var L = 200;
   // feature definition (TODO generate based on input from user)
@@ -22,7 +22,7 @@
   alert("chromosomes: " + debug);
 
   //-- begin processing
-  //start(chromosomes, theta, Pco, Pmut, L);
+  start(chromosomes, theta, Pco, Pmut, L);
 
 
   /**
@@ -35,7 +35,6 @@
     // fitness associative array {chromosome : fitness, ...}
     var chromosomeByFitness = {};
     var generation = 0;
-    var offspring;
     var highestFitness=0;
     do {
       highestFitness = calcPopulationFitness(chromosomes, chromosomeByFitness);
@@ -53,17 +52,19 @@
           c2Index = Math.floor((Math.random()*fittestRange));
         }
 
-        var pCrossover = Math.random();
-        if (pCrossover > Pco) {
-          offspring = crossOver(chromosomes, c1Index, c2Index);
+        var prob = Math.random();
+        if (prob > Pco) {
+          var offsprings = crossOver(chromosomes, c1Index, c2Index);
+	        nextGenChromosomes.push(offsprings[0]);
+	        nextGenChromosomes.push(offsprings[1]);
+	        offspringCount+=2;
         }
         else {
-          offSpring = mutate(chromosomes, c1Index, Pmut);
+          var offspring = mutate(chromosomes, c1Index, Pmut);
+          nextGenChromosomes.push(offspring);
+	        offspringCount+=1;
         }
 
-        //-- add to next generation's population
-        nextGenChromosomes.push(offSpring);
-        offspringCount++;
         generation++;
       } while (offspringCount < L);
       chromosomes = nextGenChromosomes;
@@ -90,19 +91,26 @@
     }
 
     //-- rank them
-    chromosomes.sort(function(c1,c2) {return chromosomeByFitness[c2]-chromosomeByFitness[c1];});
+    chromosomes.sort(function(c1,c2) {
+    	return chromosomeByFitness[c2]-chromosomeByFitness[c1]
+    });
 
     return highestFitness;
   }
 
 
   /** 
-   *
+   * Only function with feature definition that needs to be adapted for the algo to work properly !
    */
   function calcFitness(chromosome) {
     var score = 0;
 
-    //TODO calculate the score 
+    var chromosomeFeatures = extractFeatures(chromosome, features);
+    
+    if (chromosomeFeatures['player1'] != chromosomeFeatures['player2'])
+    	score += 2;
+
+    //TODO check opponents preference & ranking equivalence !
 
     return score;
   }
@@ -142,6 +150,19 @@
    *
    */
   function mutate(chromosomes, c1Index, Pmut) {
+  	var c1 = chromosomes[c1Index];
+  	var cLen= c1.length;
+  	for (var i=0;i<cLen;i++) {
+  		var prob = Math.random();
+  		if (prob > Pmut) {
+  			// mutate bit !
+  			if (c1[i] == '0')
+					chromosomes[c1Index] = c1.substr(0, i) + '1' + c1.substr(i + 1);
+  			else
+					chromosomes[c1Index] = c1.substr(0, i) + '0' + c1.substr(i + 1);
+  		}
+  	}
+  	return c1;
   }
 
 
@@ -149,6 +170,14 @@
    *
    */
   function crossOver(chromosomes, c1Index, c2Index) {
+  	var c1 = chromosomes[c1Index];
+  	var c2 = chromosomes[c2Index];
+  	var cLen = c1.length;
+  	var splitPt = Math.floor((Math.random()*cLen));
+
+		var newC1 = c2.slice(0,splitPt) + c1.slice(splitPt+1, cLen);
+		var newC2 = c1.slice(0,splitPt) + c2.slice(splitPt+1, cLen);
+		return [newC1, newC2];
   }
 
   /** 
