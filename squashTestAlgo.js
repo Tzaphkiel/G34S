@@ -1,3 +1,4 @@
+
 // criterion score (end condition)
 var theta = 10;
 // Crossover rate
@@ -6,11 +7,12 @@ var Pco  = 0.05;
 var Pmut = 0.01;
 // Population size
 var L = 1000;
+// feature definition (TODO generate based on input from user)
 var features = {
-  court: {pos: 0, name: 'Court', max: 4, lastValid: 11b},
-  Player1: {pos: 1, name: 'Player 1', max: 7, lastValid: 110b},
-  player2: {pos: 2, name: 'Player 2', max: 7, lastValid: 110b},
-  timeslot: {pos: 3, name: 'Timeslot', max: 6, lastValid: 101b}
+  player1: {pos: 0, name: 'Player 1', maxVal: 7, numBit: 3, lastValid: 110b},
+  player2: {pos: 1, name: 'Player 2', maxVal: 7, numBit: 3, lastValid: 110b},
+  court: {pos: 2, name: 'Court', maxVal: 4, numBit: 2, lastValid: 11b},
+  timeslot: {pos: 3, name: 'Timeslot', maxVal: 6, numBit: 3, lastValid: 101b}
 };
 // Chromosomes
 var chromosomes = new Array();
@@ -94,10 +96,10 @@ function calcPopulationFitness(chromosomes, chromosomeByFitness){
 /** 
  *
  */
-function chromosomeValid(chromosome) {
+function chromosomeValid(chromosome, features) {
   var chromosomeFeatures = extractFeatures(chromosome);
   for (feature in chromosomeFeatures){
-    if (chromosomeFeatures[feature] > FEATURES_LIMIT[feature]) {
+    if (chromosomeFeatures[feature] > features[feature]) {
       return false;
     }
   }
@@ -121,8 +123,12 @@ function calcFitness(chromosome) {
  *
  */
 function initChromosomes(chromosomes, L, features) {
-  // TODO calculate FEATURES_LIMIT and init !
   for (var i=0;i<L;i++){
-    chromosomes[i] = '1000101011101011'; // must be done randomly !
+    var chromosome = '';
+    for (feature in features) {
+      var v = Math.floor((Math.random()*feature['maxVal'])+1)
+      chromosome.concat(v.toString(2));
+    }
+    chromosomes[i] = chromosome;
   }
 }
