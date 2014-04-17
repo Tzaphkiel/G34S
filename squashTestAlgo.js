@@ -9,13 +9,13 @@ var Pmut = 0.01;
 var L = 1000;
 // feature definition (TODO generate based on input from user)
 var features = {
-  player1: {pos: 0, name: 'Player 1', maxVal: 7, numBit: 3, lastValid: 110b},
-  player2: {pos: 1, name: 'Player 2', maxVal: 7, numBit: 3, lastValid: 110b},
-  court: {pos: 2, name: 'Court', maxVal: 4, numBit: 2, lastValid: 11b},
-  timeslot: {pos: 3, name: 'Timeslot', maxVal: 6, numBit: 3, lastValid: 101b}
+  player1: {pos: 0, name: 'Player 1', maxVal: 7, numBit: 3, lastValid: parseInt('110', 2)},
+  player2: {pos: 1, name: 'Player 2', maxVal: 7, numBit: 3, lastValid: parseInt('110', 2)},
+  court: {pos: 2, name: 'Court', maxVal: 4, numBit: 2, lastValid: parseInt('11', 2)},
+  timeslot: {pos: 3, name: 'Timeslot', maxVal: 6, numBit: 3, lastValid: parseInt('101', 2)}
 };
 // Chromosomes
-var chromosomes = new Array();
+var chromosomes = [];
 initChromosomes(chromosomes, L, features);
 
 //-- begin processing
@@ -33,13 +33,13 @@ function start(chromosomes) {
   var chromosomeByFitness = {};
   var generation = 0;
   var offspring;
-  highestFitness = 0;
+  var highestFitness=0;
   do {
-    var highestFitness = calcPopulationFitness(chromosomes, chromosomeByFitness);
+    highestFitness = calcPopulationFitness(chromosomes, chromosomeByFitness);
 
     //-- generate offsprings
-    nextGenChromosomes = []
-    offspringCount =0
+    nextGenChromosomes = [];
+    offspringCount =0;
     do {
       //-- select two chromosomes from top 10% of population
       var fittestRange = L*0.1;
@@ -67,7 +67,7 @@ function start(chromosomes) {
   } while (highestFitness < theta);
 
   // re-calculate fitness as we are in the next generation already when we exit loop
-  var highestFitness = calcPopulationFitness(chromosomes, chromosomeByFitness);
+  highestFitness = calcPopulationFitness(chromosomes, chromosomeByFitness);
   return chromosomes[0];
 }
 
@@ -97,13 +97,13 @@ function calcPopulationFitness(chromosomes, chromosomeByFitness){
  *
  */
 function chromosomeValid(chromosome, features) {
-  var chromosomeFeatures = extractFeatures(chromosome);
-  for (feature in chromosomeFeatures){
-    if (chromosomeFeatures[feature] > features[feature]) {
+  var chromosomeFeatures = extractFeatures(chromosome, features);
+  for (var feature in chromosomeFeatures){
+    if (chromosomeFeatures[feature] >= features[feature].maxVal) {
       return false;
     }
   }
-  return true
+  return true;
 }
 
 
@@ -125,8 +125,8 @@ function calcFitness(chromosome) {
 function initChromosomes(chromosomes, L, features) {
   for (var i=0;i<L;i++){
     var chromosome = '';
-    for (feature in features) {
-      var v = Math.floor((Math.random()*feature['maxVal'])+1)
+    for (var feature in features) {
+      var v = Math.floor((Math.random()*feature.maxVal));
       chromosome.concat(v.toString(2));
     }
     chromosomes[i] = chromosome;
